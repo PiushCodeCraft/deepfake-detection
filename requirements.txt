@@ -1,0 +1,13 @@
+numpy
+pandas
+opencv-python
+mediapipe
+scikit-learn
+scipy
+matplotlib
+seaborn
+joblib
+flask
+flask-cors
+python-dotenv
+Pillow
