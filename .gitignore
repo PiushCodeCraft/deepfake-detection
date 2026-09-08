@@ -30,6 +30,10 @@ Thumbs.db
 # Logs
 *.log
 
+# Node
+node_modules/
+npm-debug.log*
+
 # Uploaded / Generated Images
 uploads/
 outputs/
@@ -52,9 +56,10 @@ models/*.h5
 *.zip
 
 # Build files
-frontend/node_modules/
 frontend/dist/
 frontend/build/
+backend/dist/
+backend/build/
 
 # Coverage
 htmlcov/
