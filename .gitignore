@@ -50,6 +50,7 @@ models/*.joblib
 models/*.pt
 models/*.pth
 models/*.h5
+models/*.task
 
 # Generated files
 *.csv
