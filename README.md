@@ -6,103 +6,73 @@ DeepTrace is an explainable deepfake image detection system that analyzes
 facial landmark geometry and facial symmetry to identify potentially
 manipulated facial images.
 
-The system extracts facial landmarks from an input image, calculates
-geometric features such as distances, angles, and proportions, and analyzes
-facial symmetry by comparing corresponding facial regions.
+The system extracts facial landmarks from an input image using MediaPipe,
+calculates geometric features such as distances, angles, aspect ratios,
+relative proportions, and symmetry measurements, and provides these features
+to a machine learning classifier.
 
-The extracted features are then provided to a machine learning classifier
-to predict whether the input image is likely to be Real or Deepfake.
+The current machine learning implementation uses a Random Forest classifier
+to predict whether an input facial image is likely to be **Real** or **Fake**.
 
-The system also provides an explainable result by highlighting suspicious
-facial regions or geometric characteristics that contributed to the prediction,
-along with a confidence score.
+The system also provides explainable information by showing the important
+facial geometry and symmetry features associated with the prediction,
+together with a confidence score.
+
+---
+
+## Project Objectives
+
+- Detect potentially manipulated facial images.
+- Extract facial landmarks using MediaPipe.
+- Analyze facial geometry using measurable features.
+- Analyze left-right facial symmetry.
+- Combine geometry and symmetry features for classification.
+- Provide an interpretable prediction instead of relying only on raw image
+  classification.
+- Provide prediction confidence and feature-based explanation.
+- Integrate the detection system with a web application.
+- Maintain prediction information using PostgreSQL.
+- Use CI/CD practices to automatically check the project code.
 
 ---
 
 ## Features
 
 - Face Detection
-- Facial Landmark Extraction
+- 478-Point Facial Landmark Extraction
 - Facial Geometry Analysis
 - Facial Symmetry Analysis
-- Feature Fusion
-- Deepfake Classification
-- Explainable AI
-- Confidence Score
+- Feature Engineering
+- Random Forest Classification
+- Prediction Confidence
+- Feature Importance Based Explainability
 - Web-based Detection Interface
+- Node.js/Express Backend
+- PostgreSQL Database
+- Git/GitHub Version Control
+- GitHub Actions CI
 
 ---
 
 ## Project Workflow
 
+```text
 Input Image
      ↓
-Face Detection & Landmark Extraction
+Face Detection
+     ↓
+Facial Landmark Extraction
      ↓
 Facial Geometry Analysis
      ↓
 Symmetry Analysis
      ↓
-Feature Fusion
+Feature Extraction
      ↓
-Deepfake Classification
+Machine Learning Classification
+     ↓
+Prediction + Confidence
      ↓
 Explainable Output
-
----
-
-## Technologies Used
-
-### Programming Languages
-- Python
-- JavaScript
-
-### Computer Vision
-- OpenCV
-- MediaPipe
-
-### Feature Analysis
-- NumPy
-- SciPy
-
-### Machine Learning
-- Scikit-learn
-
-### Explainable AI
-- LIME
-- SHAP
-- Matplotlib
-
-### Backend
-- Flask
-- REST API
-
-### Frontend
-- React.js
-
-### Database
-- PostgreSQL
-
-### Development Tools
-- Visual Studio Code
-- Jupyter Notebook
-- Git
-- GitHub
-
----
-
-## Repository Structure
-
-```text
-deepfake-detection/
-│
-├── backend/
-├── dataset/
-├── docs/
-├── frontend/
-├── models/
-│
-├── .gitignore
-├── LICENSE
-├── README.md
-└── requirements.txt
+     ↓
+Web Application / Database

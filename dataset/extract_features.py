@@ -1,6 +1,10 @@
+# pyrefly: ignore [missing-import]
 from datasets import load_dataset
+# pyrefly: ignore [missing-import]
 from mediapipe.tasks import python
+# pyrefly: ignore [missing-import]
 from mediapipe.tasks.python import vision
+# pyrefly: ignore [missing-import]
 import mediapipe as mp
 import numpy as np
 import math

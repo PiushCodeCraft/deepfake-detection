@@ -1,0 +1,9 @@
+datasets==5.0.1
+mediapipe
+numpy
+pandas==3.0.5
+scikit-learn==1.9.1
+matplotlib
+seaborn
+joblib
+opencv-python

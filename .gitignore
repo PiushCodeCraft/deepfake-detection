@@ -38,6 +38,7 @@ npm-debug.log*
 uploads/
 outputs/
 temp/
+docs/
 
 # Dataset files
 dataset/images/
