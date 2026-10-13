@@ -47,11 +47,13 @@ dataset/processed/
 
 # Large model files
 models/*.pkl
-models/*.joblib
 models/*.pt
 models/*.pth
 models/*.h5
+models/*.joblib
 models/*.task
+!models/deeptrace_random_forest.joblib
+!models/face_landmarker.task
 
 # Generated files
 *.csv

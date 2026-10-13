@@ -167,8 +167,8 @@ def extract_features(landmarks):
     )
 
     mouth_height = distance(
-        landmarks[13],
-        landmarks[14]
+        landmarks[0],
+        landmarks[17]
     )
 
 
@@ -216,10 +216,10 @@ def extract_features(landmarks):
         if right_eye_height != 0 else 0
     )
 
-    mouth_aspect_ratio = (
-        mouth_width / mouth_height
-        if mouth_height != 0 else 0
-    )
+    # mouth_aspect_ratio = (
+    #     mouth_width / mouth_height
+    #     if mouth_height != 0 else 0
+    # )
 
     face_aspect_ratio = (
         face_width / face_height
@@ -292,7 +292,7 @@ def extract_features(landmarks):
         "left_eye_aspect_ratio": left_eye_aspect_ratio,
         "right_eye_aspect_ratio": right_eye_aspect_ratio,
 
-        "mouth_aspect_ratio": mouth_aspect_ratio,
+        # "mouth_aspect_ratio": mouth_aspect_ratio,
 
         "face_aspect_ratio": face_aspect_ratio,
 

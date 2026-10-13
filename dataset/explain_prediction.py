@@ -1,3 +1,11 @@
+import os
+import sys
+from pathlib import Path
+
+# Suppress MediaPipe/TF C++ log output
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["GLOG_minloglevel"] = "3"
+
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import mediapipe as mp
@@ -5,19 +13,20 @@ import mediapipe as mp
 import numpy as np
 import pandas as pd
 import joblib
-import sys
-import os
 
 
 # ==========================================
-# SETTINGS
+# SETTINGS & PATHS
 # ==========================================
 
-MODEL_PATH = "../models/deeptrace_random_forest.joblib"
-LANDMARK_MODEL = "../models/face_landmarker.task"
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
 
-DATASET_FILE = "processed/features.csv"
-IMPORTANCE_FILE = "processed/feature_importance.csv"
+MODEL_PATH = str(PROJECT_ROOT / "models" / "deeptrace_random_forest.joblib")
+LANDMARK_MODEL = str(PROJECT_ROOT / "models" / "face_landmarker.task")
+
+DATASET_FILE = str(BASE_DIR / "processed" / "features_test.csv")
+IMPORTANCE_FILE = str(BASE_DIR / "processed" / "feature_importance.csv")
 
 
 # ==========================================
@@ -70,7 +79,6 @@ feature_order = [
     "eyebrow_distance",
     "left_eye_aspect_ratio",
     "right_eye_aspect_ratio",
-    "mouth_aspect_ratio",
     "face_aspect_ratio",
     "nose_width_ratio",
     "nose_mouth_ratio",
@@ -188,8 +196,8 @@ def extract_features(landmarks):
     )
 
     mouth_height = distance(
-        landmarks[13],
-        landmarks[14]
+        landmarks[0],
+        landmarks[17]
     )
 
     face_width = distance(
@@ -227,10 +235,10 @@ def extract_features(landmarks):
         if right_eye_height != 0 else 0
     )
 
-    mouth_aspect_ratio = (
-        mouth_width / mouth_height
-        if mouth_height != 0 else 0
-    )
+    # mouth_aspect_ratio = (
+    #     mouth_width / mouth_height
+    #     if mouth_height != 0 else 0
+    # )
 
     face_aspect_ratio = (
         face_width / face_height
@@ -288,7 +296,7 @@ def extract_features(landmarks):
         "eyebrow_distance": eyebrow_distance,
         "left_eye_aspect_ratio": left_eye_aspect_ratio,
         "right_eye_aspect_ratio": right_eye_aspect_ratio,
-        "mouth_aspect_ratio": mouth_aspect_ratio,
+        # "mouth_aspect_ratio": mouth_aspect_ratio,
         "face_aspect_ratio": face_aspect_ratio,
         "nose_width_ratio": nose_width_ratio,
         "nose_mouth_ratio": nose_mouth_ratio,
@@ -304,158 +312,154 @@ def extract_features(landmarks):
 # PROCESS IMAGE
 # ==========================================
 
-print(f"Processing: {IMAGE_PATH}")
+try:
+    print(f"Processing: {IMAGE_PATH}")
 
-image = mp.Image.create_from_file(
-    IMAGE_PATH
-)
+    image = mp.Image.create_from_file(
+        IMAGE_PATH
+    )
 
-result = detector.detect(image)
+    result = detector.detect(image)
 
-if not result.face_landmarks:
+    if not result.face_landmarks:
+        print("No face detected.")
+        sys.exit(1)
 
-    print("No face detected.")
+    landmarks = result.face_landmarks[0]
 
+    print(f"Detected {len(landmarks)} facial landmarks.")
+
+
+    # ==========================================
+    # EXTRACT FEATURES
+    # ==========================================
+
+    features = extract_features(landmarks)
+
+    X = pd.DataFrame(
+        [features],
+        columns=feature_order
+    )
+
+
+    # ==========================================
+    # PREDICTION
+    # ==========================================
+
+    prediction = model.predict(X)[0]
+
+    probabilities = model.predict_proba(X)[0]
+
+    class_names = model.classes_
+
+    probability_map = dict(
+        zip(class_names, probabilities)
+    )
+
+    confidence = probability_map[prediction] * 100
+
+
+    # ==========================================
+    # EXPLANATION
+    # ==========================================
+
+    print()
+    print("==============================")
+    print("DEEPTRACE EXPLANATION")
+    print("==============================")
+
+    print(f"Prediction : {prediction}")
+    print(f"Confidence : {confidence:.2f}%")
+
+    print()
+    print("Class probabilities:")
+
+    for class_name in class_names:
+
+        print(
+            f"{class_name:6} : "
+            f"{probability_map[class_name] * 100:.2f}%"
+        )
+
+
+    # ==========================================
+    # FEATURE IMPORTANCE
+    # ==========================================
+
+    print()
+    print("==============================")
+    print("TOP IMPORTANT FEATURES")
+    print("==============================")
+
+
+    top_features = importance_df.head(10)
+
+    for _, row in top_features.iterrows():
+
+        feature = row["feature"]
+        importance = row["importance"]
+        value = features[feature]
+
+        print(
+            f"{feature:30} "
+            f"importance={importance:.4f} "
+            f"value={value:.6f}"
+        )
+
+
+    # ==========================================
+    # SYMMETRY FEATURES
+    # ==========================================
+
+    print()
+    print("==============================")
+    print("FACIAL SYMMETRY FEATURES")
+    print("==============================")
+
+    symmetry_features = [
+        "eye_width_symmetry",
+        "eye_height_symmetry",
+        "eye_aspect_symmetry",
+        "eyebrow_symmetry"
+    ]
+
+    for feature in symmetry_features:
+
+        print(
+            f"{feature:25} : "
+            f"{features[feature]:.6f}"
+        )
+
+
+    # ==========================================
+    # GEOMETRY FEATURES
+    # ==========================================
+
+    print()
+    print("==============================")
+    print("KEY GEOMETRY FEATURES")
+    print("==============================")
+
+    geometry_features = [
+        "left_eye_aspect_ratio",
+        "right_eye_aspect_ratio",
+        "nose_width",
+        "face_height",
+        "mouth_width",
+        "nose_to_mouth",
+        "eyebrow_distance",
+        "face_aspect_ratio"
+    ]
+
+    for feature in geometry_features:
+
+        print(
+            f"{feature:30} : "
+            f"{features[feature]:.6f}"
+        )
+
+    print()
+    print("Explanation generated successfully.")
+
+finally:
     detector.close()
-
-    sys.exit(1)
-
-
-landmarks = result.face_landmarks[0]
-
-print(f"Detected {len(landmarks)} facial landmarks.")
-
-
-# ==========================================
-# EXTRACT FEATURES
-# ==========================================
-
-features = extract_features(landmarks)
-
-X = pd.DataFrame(
-    [features],
-    columns=feature_order
-)
-
-
-# ==========================================
-# PREDICTION
-# ==========================================
-
-prediction = model.predict(X)[0]
-
-probabilities = model.predict_proba(X)[0]
-
-class_names = model.classes_
-
-probability_map = dict(
-    zip(class_names, probabilities)
-)
-
-confidence = probability_map[prediction] * 100
-
-
-# ==========================================
-# EXPLANATION
-# ==========================================
-
-print()
-print("==============================")
-print("DEEPTRACE EXPLANATION")
-print("==============================")
-
-print(f"Prediction : {prediction}")
-print(f"Confidence : {confidence:.2f}%")
-
-print()
-print("Class probabilities:")
-
-for class_name in class_names:
-
-    print(
-        f"{class_name:6} : "
-        f"{probability_map[class_name] * 100:.2f}%"
-    )
-
-
-# ==========================================
-# FEATURE IMPORTANCE
-# ==========================================
-
-print()
-print("==============================")
-print("TOP IMPORTANT FEATURES")
-print("==============================")
-
-
-top_features = importance_df.head(10)
-
-for _, row in top_features.iterrows():
-
-    feature = row["feature"]
-    importance = row["importance"]
-    value = features[feature]
-
-    print(
-        f"{feature:30} "
-        f"importance={importance:.4f} "
-        f"value={value:.6f}"
-    )
-
-
-# ==========================================
-# SYMMETRY FEATURES
-# ==========================================
-
-print()
-print("==============================")
-print("FACIAL SYMMETRY FEATURES")
-print("==============================")
-
-symmetry_features = [
-    "eye_width_symmetry",
-    "eye_height_symmetry",
-    "eye_aspect_symmetry",
-    "eyebrow_symmetry"
-]
-
-for feature in symmetry_features:
-
-    print(
-        f"{feature:25} : "
-        f"{features[feature]:.6f}"
-    )
-
-
-# ==========================================
-# GEOMETRY FEATURES
-# ==========================================
-
-print()
-print("==============================")
-print("KEY GEOMETRY FEATURES")
-print("==============================")
-
-geometry_features = [
-    "left_eye_aspect_ratio",
-    "right_eye_aspect_ratio",
-    "nose_width",
-    "face_height",
-    "mouth_width",
-    "nose_to_mouth",
-    "eyebrow_distance",
-    "face_aspect_ratio"
-]
-
-for feature in geometry_features:
-
-    print(
-        f"{feature:30} : "
-        f"{features[feature]:.6f}"
-    )
-
-
-detector.close()
-
-print()
-print("Explanation generated successfully.")

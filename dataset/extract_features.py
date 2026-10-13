@@ -265,10 +265,10 @@ def extract_features(image):
     )
 
 
-    mouth_aspect_ratio = (
-        mouth_width / mouth_height
-        if mouth_height != 0 else 0
-    )
+    # mouth_aspect_ratio = (
+    #     mouth_width / mouth_height
+    #     if mouth_height != 0 else 0
+    # )
 
 
     face_aspect_ratio = (
@@ -419,8 +419,8 @@ def extract_features(image):
         "right_eye_aspect_ratio":
             right_eye_aspect_ratio,
 
-        "mouth_aspect_ratio":
-            mouth_aspect_ratio,
+        # "mouth_aspect_ratio":
+        #     mouth_aspect_ratio,
 
         "face_aspect_ratio":
             face_aspect_ratio,

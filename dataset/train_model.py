@@ -20,7 +20,7 @@ import os
 # SETTINGS
 # ==============================
 
-DATASET_FILE = "processed/features.csv"
+DATASET_FILE = "processed/features_test.csv"
 MODEL_DIR = "../models"
 
 os.makedirs(MODEL_DIR, exist_ok=True)
